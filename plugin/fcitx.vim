@@ -78,7 +78,7 @@ if executable("fcitx-remote")
   augroup FCITX
     autocmd!
     autocmd InsertEnter * call <SID>fcitx_enter()
-    autocmd BufLeave    * call <SID>fcitx_leave(1)
+    autocmd BufLeave    * call <SID>fcitx_leave(0)
     autocmd CmdwinLeave * call <SID>fcitx_leave(0)
     autocmd InsertLeave * call <SID>fcitx_leave(1)
   augroup END
