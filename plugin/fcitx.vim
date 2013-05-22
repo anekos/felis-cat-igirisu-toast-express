@@ -45,204 +45,44 @@ set cpo&vim
 
 " }}}
 
-" Rune Character Table {{{
+" Meowin {{{
 
-let s:runes = {
-\   'german': {
-\     'f': 'ᚠ',
-\     'u': 'ᚢ',
-\     'T': 'ᚦ',
-\     'a': 'ᚫ',
-\     'r': 'ᚱ',
-\     'k': 'ᚲ',
-\     'g': 'ᚷ',
-\     'w': 'ᚹ',
-\     'h': 'ᚺ',
-\     'n': 'ᛅ',
-\     'i': 'ᛁ',
-\     'j': 'ᛃ',
-\     'I': 'ᛇ',
-\     'p': 'ᛈ',
-\     'z': 'ᛉ',
-\     'R': 'ᛉ',
-\     's': 'ᛊ',
-\     't': 'ᛏ',
-\     'b': 'ᛒ',
-\     'e': 'ᛖ',
-\     'm': 'ᛗ',
-\     'l': 'ᛚ',
-\     'N': 'ᛜ',
-\     'o': 'ᛟ',
-\     'd': 'ᛞ'
-\   },
-\   'anglosaxon': {
-\     'f': 'ᚠ',
-\     'u': 'ᚢ',
-\     'T': 'ᚦ',
-\     'o': 'ᚩ',
-\     'r': 'ᚱ',
-\     'c': 'ᚳ',
-\     'g': 'ᚷ',
-\     'w': 'ᚹ',
-\     'h': 'ᚻ',
-\     'n': 'ᚾ',
-\     'i': 'ᛁ',
-\     'j': 'ᚼ',
-\     'I': 'ᛇ',
-\     'p': 'ᛈ',
-\     'x': 'ᛉ',
-\     's': 'ᛋ',
-\     'S': 'ᚴ',
-\     't': 'ᛏ',
-\     'b': 'ᛒ',
-\     'e': 'ᛖ',
-\     'm': 'ᛗ',
-\     'l': 'ᛚ',
-\     'N': 'ᛝ',
-\     'O': 'ᛟ',
-\     'd': 'ᛞ',
-\     'a': 'ᚪ',
-\     'A': 'ᚨ',
-\     'y': 'ᚣ',
-\     'E': 'ᛠ',
-\     'G': 'ᚸ',
-\     'k': 'ᛣ',
-\     'K': 'ᛤ'
-\   },
-\   'denmark': {
-\     'f': 'ᚠ',
-\     'u': 'ᚢ',
-\     'T': 'ᚦ',
-\     'o': 'ᚭ',
-\     'r': 'ᚱ',
-\     'k': 'ᚴ',
-\     'h': 'ᚼ',
-\     'n': 'ᚾ',
-\     'i': 'ᛁ',
-\     'a': 'ᛅ',
-\     's': 'ᛋ',
-\     't': 'ᛏ',
-\     'b': 'ᛒ',
-\     'm': 'ᛉ',
-\     'l': 'ᛚ',
-\     'R': 'ᛣ'
-\   },
-\   'sweden': {
-\     'f': 'ᚠ',
-\     'u': 'ᚢ',
-\     'T': 'ᚦ',
-\     'o': 'ᚭ',
-\     'O': 'ᚮ',
-\     'r': 'ᚱ',
-\     'k': 'ᚴ',
-\     'h': 'ᚽ',
-\     'n': 'ᚿ',
-\     'i': 'ᛁ',
-\     'a': 'ᛆ',
-\     's': 'ᛍ',
-\     't': 'ᛐ',
-\     'b': 'ᛓ',
-\     'm': 'ᛙ',
-\     'l': 'ᛚ',
-\     'R': 'ᛧ'
-\   }
-\}
-" G: N -> ng, T -> th
-
-" }}}
-
-" Variables {{{
-
-let s:rune_name = "german"
-
-" }}}
-
-" Merge User Defined Table {{{
-
-if exists('g:runes_table')
-  for name in keys(g:runes_table)
-    let s:runes[name] = g:runes_table[name]
-  endfor
-endif
-
-" }}}
-
-" Functions {{{
-
-function! s:convert(name, char)
-  return get(s:runes[a:name], a:char, a:char)
-endfunction
-
-function! s:start(...)
-  let b:anekos_runes_enabled = 1
-
-  if a:0 > 0
-    if !has_key(s:runes, a:1)
-      echoerr "Unknown rune: " . a:1
-      return
+if executable("fcitx-remote")
+  function! s:fcitx_enter()
+    let l:opt = (exists('b:fcitx_last_state') && b:fcitx_last_state) ? 'o' : 'c'
+    if s:fcitx_fix_mode
+      call system('fcitx-remote -' . l:opt)
     endif
-    let b:rune_name = a:1
-    let s:rune_name = a:1
-  else
-    let b:rune_name = s:rune_name
-  endif
+  endfunction
 
-  augroup anekos_runes
-    autocmd InsertCharPre <buffer> let v:char = s:convert(b:rune_name, v:char)
-  augroup END
-  echomsg "Rune Input Mode: on (" . b:rune_name . ")"
-endfunction
+  function! s:fcitx_leave(store)
+    if a:store
+      let b:fcitx_last_state = match(system('fcitx-remote'), '^2') == 0
+    endif
+    call system('fcitx-remote -c')
+  endfunction
 
-function s:stop()
-  let b:anekos_runes_enabled = 0
-  autocmd! anekos_runes InsertCharPre <buffer>
-  echomsg "Rune Input Mode: off"
-endfunction
-
-function! s:toggle()
-  if !exists('b:anekos_runes_enabled')
-    let b:anekos_runes_enabled = 0
-  endif
-
-  let b:anekos_runes_enabled = !b:anekos_runes_enabled
-  if b:anekos_runes_enabled
-    call s:start()
-  else
-    call s:stop()
-  endif
-endfunction
-
-function! s:runes_command(bang, name)
-  if a:bang
-    call s:stop()
-  else
-    if a:name == ""
-      call s:start()
+  function! s:fcitx_fix_mode()
+    let s:fcitx_fix_mode = !s:fcitx_fix_mode
+    if s:fcitx_fix_mode
+      echomsg 'Fcitx Fix Mode: On'
     else
-      call s:start(a:name)
+      echomsg 'Fcitx Fix Mode: Off'
     endif
-  endif
-endfunction
+  endfunction
 
-function! s:rune_name_completer(arg_lead, command_line, cursor_pos)
-  return filter(keys(s:runes), 'stridx(v:val, a:arg_lead)==0')
-endfunction
+  let s:fcitx_fix_mode = 0
 
-" }}}
+  command! FcitxFixMode :call <SID>fcitx_fix_mode()
 
-" Commands {{{
-
-command! -nargs=? -bang -complete=customlist,<SID>rune_name_completer Runes call <SID>runes_command('!' == '<bang>', <q-args>)
-
-" }}}
-
-" Mappings {{{
-
-inoremap <Plug>(runes_toggle) <C-o>:call <SID>toggle()<CR>
-inoremap <Plug>(runes_start_german) <C-o>:call <SID>start("german")<CR>
-inoremap <Plug>(runes_start_anglosaxon) <C-o>:call <SID>start("anglosaxon")<CR>
-inoremap <Plug>(runes_start_denmark) <C-o>:call <SID>start("denmark")<CR>
-inoremap <Plug>(runes_start_sweden) <C-o>:call <SID>start("sweden")<CR>
+  augroup FCITX
+    autocmd!
+    autocmd InsertEnter * call <SID>fcitx_enter()
+    autocmd BufLeave    * call <SID>fcitx_leave(1)
+    autocmd CmdwinLeave * call <SID>fcitx_leave(0)
+    autocmd InsertLeave * call <SID>fcitx_leave(1)
+  augroup END
+endif
 
 " }}}
 
