@@ -7,7 +7,7 @@ Automatically activate/inactivate fcitx.
 
     NeoBundle 'anekos/felis-cat-igirisu-toast-express'
 
-# Fix fcitx state each by buffer
+# Fix fcitx state by each buffer
 
     :FcitxFixMode
 
