@@ -47,19 +47,30 @@ set cpo&vim
 
 " Meowin {{{
 
-if executable("fcitx-remote")
+let s:fcitx_remote_command = ''
+
+for s:cmd in ['fcitx-remote', 'fcitx5-remote']
+  if executable(s:cmd)
+    let s:fcitx_remote_command = s:cmd
+  endif
+endfor
+unlet s:cmd
+
+echomsg s:fcitx_remote_command
+
+if 0 < len(s:fcitx_remote_command)
   function! s:fcitx_enter()
     let l:opt = (exists('b:fcitx_last_state') && b:fcitx_last_state) ? 'o' : 'c'
     if s:fcitx_fix_mode
-      call system('fcitx-remote -' . l:opt)
+      call system(s:fcitx_remote_command . ' -' . l:opt)
     endif
   endfunction
 
   function! s:fcitx_leave(store)
     if a:store
-      let b:fcitx_last_state = match(system('fcitx-remote'), '^2') == 0
+      let b:fcitx_last_state = match(system(s:fcitx_remote_command), '^2') == 0
     endif
-    call system('fcitx-remote -c')
+    call system(s:fcitx_remote_command . ' -c')
   endfunction
 
   function! s:fcitx_fix_mode()
