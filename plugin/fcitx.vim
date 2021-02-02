@@ -56,8 +56,6 @@ for s:cmd in ['fcitx-remote', 'fcitx5-remote']
 endfor
 unlet s:cmd
 
-echomsg s:fcitx_remote_command
-
 if 0 < len(s:fcitx_remote_command)
   function! s:fcitx_enter()
     let l:opt = (exists('b:fcitx_last_state') && b:fcitx_last_state) ? 'o' : 'c'
